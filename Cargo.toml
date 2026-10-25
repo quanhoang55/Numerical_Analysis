@@ -1,0 +1,14 @@
+[package]
+name = "pps"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nalgebra = "0.35.0"
+ndarray = "0.17.2"
+thiserror = "1.0"
+num-traits = "0.2.19"
+
+[[bin]]
+name = "app"
+path = "src/main.rs"
