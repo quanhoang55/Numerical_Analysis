@@ -3,8 +3,8 @@
 // =============================================================
 // IMPORTS & MODULE LOADING
 // =============================================================
-use pps::polynomial::horner::{horner_derivative, horner_eval};
-// use pps::polynomial::newton::newton_backward_interpolation;
+use pps::core::io::read_txt_points;
+use pps::polynomial::central::extract_central_points;
 // =============================================================
 // PARAMETERS
 // =============================================================
@@ -17,23 +17,10 @@ use pps::polynomial::horner::{horner_derivative, horner_eval};
 // MAIN
 // =============================================================
 fn main() {
-    // let points = vec![
-    //     (2.2, 1.617),
-    //     (1.3, 1.4914),
-    //     (2.6, 1.031),
-    //     (2.7, 0.8548),
-    //     (3.0, 0.2822),
-    //     (3.2, -0.1167),
-    // ];
+    let txt_path = "data/11b.txt";
 
-    let a = vec![
-        -0.116700, -1.994500, -0.171667, 0.325000, -0.026761, 0.075105,
-    ];
-
-    let result_1 = horner_eval(&a, 2.4);
-    let result_2 = horner_derivative(&a, 2.4, 4);
-
-    println!("f(x): {:?}", result_1);
-    println!("====================================================");
-    println!("f(4)(x): {:?}", result_2);
+    let output_txt = read_txt_points(txt_path).expect("empty");
+    let points: &[(f64, f64)] = &output_txt;
+    let result = extract_central_points(points, 3.52, 9);
+    println!("{:?}", result);
 }
