@@ -170,3 +170,105 @@ pub fn gauss_i_coefficients(points: &[(f64, f64)], h: f64) -> Vec<f64> {
 // ============================================================================
 // GAUSS 2
 // ============================================================================
+
+// ============================================================================
+// STIRLING
+// ============================================================================
+
+/// Thuật toán tính hệ số đa thức nội suy Stirling (có in debug trực quan qua từng bước)
+pub fn stirling_coefficients(points: &[(f64, f64)], h: f64) -> Vec<f64> {
+    let k = points.len();
+    assert!(k % 2 == 1, "Số lượng mốc k phải là số lẻ!");
+
+    let idx = k / 2;
+    let mut delta = vec![vec![0.0; k]; k];
+
+    println!("\n=== [DEBUG] 1. THÔNG TIN ĐẦU VÀO & BẢNG SAI PHÂN TIẾN ===");
+    println!("Số lượng mốc k = {}, Bước lưới h = {}", k, h);
+    println!(
+        "Mốc tâm (x_0, y_0) ở chỉ số idx = {} -> x = {}, y = {}",
+        idx, points[idx].0, points[idx].1
+    );
+
+    // Bước 1: Khởi tạo cột 0 và tính bảng sai phân tiến
+    for i in 0..k {
+        delta[i][0] = points[i].1;
+    }
+
+    for col in 1..k {
+        for row in 0..(k - col) {
+            delta[row][col] = delta[row + 1][col - 1] - delta[row][col - 1];
+        }
+    }
+
+    // In trực quan ma trận delta dạng bảng
+    print!("{:>6} |", "row\\col");
+    for col in 0..k {
+        print!(" {:>10} |", format!("col {}", col));
+    }
+    println!("\n{:-<70}", "");
+
+    for row in 0..k {
+        print!("{:>6} |", row);
+        for col in 0..k {
+            if col < k - row {
+                print!(" {:10.4} |", delta[row][col]);
+            } else {
+                print!(" {:>10} |", "");
+            }
+        }
+        println!();
+    }
+
+    // Bước 2: Trích xuất hệ số theo đường đi Stirling
+    let mut coeff = vec![0.0; k];
+    coeff[0] = delta[idx][0]; // Hệ số ứng với y_0
+
+    println!("\n=== [DEBUG] 2. TRÍCH XUẤT HỆ SỐ STIRLING (Thô) ===");
+    println!("m = 0 (Cấp 0 - Tâm): delta[{}][0] = {:.4}", idx, coeff[0]);
+
+    for m in 1..k {
+        if m % 2 != 0 {
+            // Cấp lẻ: Lấy trung bình cộng hai giá trị đối xứng từ hai hướng (Gauss I và Gauss II)
+            let r1 = idx - (m - 1) / 2;
+            let r2 = idx - (m + 1) / 2;
+            coeff[m] = (delta[r1][m] + delta[r2][m]) / 2.0;
+            println!(
+                "m = {} (Cấp lẻ): Trung bình (delta[{}][{}] = {:.4} + delta[{}][{}] = {:.4}) / 2 = {:.4}",
+                m, r1, m, delta[r1][m], r2, m, delta[r2][m], coeff[m]
+            );
+        } else {
+            // Cấp chẵn: Giữ nguyên giá trị tại mốc trung tâm tương ứng
+            let r = idx - m / 2;
+            coeff[m] = delta[r][m];
+            println!(
+                "m = {} (Cấp chẵn): Lấy trực tiếp từ mốc trung tâm delta[{}][{}] = {:.4}",
+                m, r, m, coeff[m]
+            );
+        }
+    }
+
+    // Bước 3: Chuẩn hóa hệ số theo cấp giai thừa và h^m
+    let mut h_pow = 1.0;
+    for m in 0..k {
+        let fact = factorial(m);
+        coeff[m] = coeff[m] / (fact * h_pow);
+        h_pow *= h;
+    }
+
+    println!("\n=== [DEBUG] 3. HỆ SỐ ĐA THỨC CHUẨN HÓA (coeff theo t) ===");
+    for (m, &val) in coeff.iter().enumerate() {
+        println!("a_{} = {:.6}", m, val);
+    }
+    println!("======================================================\n");
+
+    coeff
+}
+
+fn main() {
+    // Dữ liệu mẫu kiểm thử với 5 mốc cách đều (k = 5, lẻ)
+    let points = vec![(1.0, 2.0), (2.0, 3.0), (3.0, 5.0), (4.0, 9.0), (5.0, 17.0)];
+    let h = 1.0;
+
+    let _coeffs = stirling_coefficients(&points, h);
+}

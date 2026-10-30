@@ -4,7 +4,7 @@
 // IMPORTS & MODULE LOADING
 // =============================================================
 use pps::core::io::read_txt_points;
-use pps::polynomial::central::gauss_i_coefficients;
+use pps::polynomial::central::stirling_coefficients;
 // =============================================================
 // PARAMETERS
 // =============================================================
@@ -22,6 +22,6 @@ fn main() {
     let output_txt = read_txt_points(txt_path).expect("empty");
     let points: &[(f64, f64)] = &output_txt;
 
-    let result = gauss_i_coefficients(points, 0.1);
+    let result = stirling_coefficients(points, 0.1);
     println!("{:?}", result);
 }
