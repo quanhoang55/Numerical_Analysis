@@ -264,11 +264,3 @@ pub fn stirling_coefficients(points: &[(f64, f64)], h: f64) -> Vec<f64> {
 
     coeff
 }
-
-fn main() {
-    // Dữ liệu mẫu kiểm thử với 5 mốc cách đều (k = 5, lẻ)
-    let points = vec![(1.0, 2.0), (2.0, 3.0), (3.0, 5.0), (4.0, 9.0), (5.0, 17.0)];
-    let h = 1.0;
-
-    let _coeffs = stirling_coefficients(&points, h);
-}
