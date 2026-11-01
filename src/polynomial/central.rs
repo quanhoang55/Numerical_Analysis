@@ -264,3 +264,105 @@ pub fn stirling_coefficients(points: &[(f64, f64)], h: f64) -> Vec<f64> {
 
     coeff
 }
+
+// ============================================================================
+// BESSEL
+// ============================================================================
+
+/// Thuật toán tính hệ số đa thức nội suy Bessel (cho số mốc k chẵn)
+pub fn bessel_coefficients(points: &[(f64, f64)], h: f64) -> Vec<f64> {
+    let k = points.len();
+    assert!(
+        k % 2 == 0,
+        "Số lượng mốc k của phương pháp Bessel phải là số chẵn!"
+    );
+
+    // Chỉ số mốc trung tâm cho trường hợp chẵn (cặp mốc chính giữa x_0 và x_1)
+    let idx = k / 2 - 1;
+    let mut delta = vec![vec![0.0; k]; k];
+
+    println!("\n=== [DEBUG] 1. THÔNG TIN ĐẦU VÀO & BẢNG SAI PHÂN TIẾN ===");
+    println!("Số lượng mốc k = {}, Bước lưới h = {}", k, h);
+    println!(
+        "Cặp mốc trung tâm: x_0 ở chỉ số {} (x = {}, y = {}) và x_1 ở chỉ số {} (x = {}, y = {})",
+        idx,
+        points[idx].0,
+        points[idx].1,
+        idx + 1,
+        points[idx + 1].0,
+        points[idx + 1].1
+    );
+
+    // Bước 1: Khởi tạo cột 0 và tính bảng sai phân tiến
+    for i in 0..k {
+        delta[i][0] = points[i].1;
+    }
+
+    for col in 1..k {
+        for row in 0..(k - col) {
+            delta[row][col] = delta[row + 1][col - 1] - delta[row][col - 1];
+        }
+    }
+
+    // In trực quan ma trận delta dạng bảng
+    print!("{:>6} |", "row\\col");
+    for col in 0..k {
+        print!(" {:>10} |", format!("col {}", col));
+    }
+    println!("\n{:-<75}", "");
+
+    for row in 0..k {
+        print!("{:>6} |", row);
+        for col in 0..k {
+            if col < k - row {
+                print!(" {:10.4} |", delta[row][col]);
+            } else {
+                print!(" {:>10} |", "");
+            }
+        }
+        println!();
+    }
+
+    // Bước 2: Trích xuất hệ số theo đường đi Bessel
+    let mut coeff = vec![0.0; k];
+
+    println!("\n=== [DEBUG] 2. TRÍCH XUẤT HỆ SỐ BESSEL (Thô) ===");
+
+    for m in 0..k {
+        if m % 2 == 0 {
+            // Cấp chẵn: Lấy trung bình cộng giữa hai giá trị đối xứng từ Gauss I và Gauss II
+            let r1 = idx - m / 2 + 1;
+            let r2 = idx - m / 2;
+            coeff[m] = (delta[r1][m] + delta[r2][m]) / 2.0;
+            println!(
+                "m = {} (Cấp chẵn): Trung bình (delta[{}][{}] = {:.4} + delta[{}][{}] = {:.4}) / 2 = {:.4}",
+                m, r1, m, delta[r1][m], r2, m, delta[r2][m], coeff[m]
+            );
+        } else {
+            // Cấp lẻ: Lấy trực tiếp từ mốc trung tâm tương ứng
+            let r = idx - (m - 1) / 2;
+            coeff[m] = delta[r][m];
+            println!(
+                "m = {} (Cấp lẻ): Lấy trực tiếp từ delta[{}][{}] = {:.4}",
+                m, r, m, coeff[m]
+            );
+        }
+    }
+
+    // Bước 3: Chuẩn hóa hệ số theo cấp giai thừa và h^m
+    let mut h_pow = 1.0;
+    for m in 0..k {
+        let fact = factorial(m);
+        coeff[m] = coeff[m] / (fact * h_pow);
+        h_pow *= h;
+    }
+
+    println!("\n=== [DEBUG] 3. HỆ SỐ ĐA THỨC CHUẨN HÓA (coeff theo t) ===");
+    println!("=======================================================");
+    for (m, &val) in coeff.iter().enumerate() {
+        println!("a_{} = {:.6}", m, val);
+    }
+    println!("=======================================================\n");
+
+    coeff
+}

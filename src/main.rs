@@ -5,6 +5,7 @@
 // =============================================================
 use pps::core::io::read_txt_points;
 use pps::polynomial::central::stirling_coefficients;
+use pps::polynomial::horner::horner_eval;
 // =============================================================
 // PARAMETERS
 // =============================================================
@@ -24,4 +25,8 @@ fn main() {
 
     let result = stirling_coefficients(points, 0.1);
     println!("{:?}", result);
+
+    println!("======================================================");
+    let f_1 = horner_eval(&result, 9.45).unwrap();
+    println!("f_1: {}", f_1);
 }
